@@ -37,6 +37,6 @@ abstract contract WardenMailboxInteractor is IOrigin {
 
     function _allowedSender(uint32 domain, bytes32 sender) private view {
         (IMailbox mailbox, uint32 domain_, bytes32 target) = _getRegistryData();
-        if (msg.sender != address(mailbox) || sender != target || domain == domain_) revert NoAccess();
+        if (msg.sender != address(mailbox) || sender != target || domain != domain_) revert NoAccess();
     }
 }

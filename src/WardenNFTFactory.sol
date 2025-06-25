@@ -25,14 +25,13 @@ contract WardenNFTFactory is Ownable2Step, IWardenRegistry {
         target = target_;
     }
 
-    function createCollection(string calldata name, string calldata symbol) external {
-        address collection = collections[msg.sender];
-        if (collections[msg.sender] != collection) revert AlreadyOwnsCollection(collection);
+    function createCollection(string calldata name, string calldata symbol) external returns (address collection) {
+        if (collections[msg.sender] != address(0)) revert AlreadyOwnsCollection(collections[msg.sender]);
 
-        WardenNFT nft = new WardenNFT(msg.sender, name, symbol);
-        collections[msg.sender] = address(nft);
+        collection = address(new WardenNFT(msg.sender, name, symbol));
+        collections[msg.sender] = collection;
 
-        emit NewCollectionCreated(msg.sender, address(nft));
+        emit NewCollectionCreated(msg.sender, collection);
     }
 
     function changeMailbox(address newMailbox) external onlyOwner {
