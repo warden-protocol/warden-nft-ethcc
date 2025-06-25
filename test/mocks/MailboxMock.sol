@@ -5,7 +5,7 @@ import {Test} from "forge-std/Test.sol";
 
 import {IMailbox} from "../../src/interfaces/IMailbox.sol";
 
-contract MailboxMock is IMailbox {
+contract MailboxMock is IMailbox, Test {
     event Dispatched(uint32 destinationDomain, bytes32 recipientAddress, bytes messageBody);
 
     function dispatch(uint32 destinationDomain, bytes32 recipientAddress, bytes calldata messageBody)
