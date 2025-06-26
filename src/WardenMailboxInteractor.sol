@@ -19,14 +19,14 @@ abstract contract WardenMailboxInteractor is IOrigin {
         registry = IWardenRegistry(registry_);
     }
 
-    function _dispatch(bytes memory messageBody) internal returns (bytes32 messageId) {
-        (IMailbox mailbox, uint32 domain, bytes32 target) = _getRegistryData();
-        return mailbox.dispatch(domain, target, messageBody);
-    }
-
-    function _quoteDispatch(bytes memory messageBody) internal view returns (uint256 fee) {
+    function quoteDispatch(bytes memory messageBody) public view returns (uint256 fee) {
         (IMailbox mailbox, uint32 domain, bytes32 target) = _getRegistryData();
         return mailbox.quoteDispatch(domain, target, messageBody);
+    }
+
+    function _dispatch(bytes memory messageBody) internal returns (bytes32 messageId) {
+        (IMailbox mailbox, uint32 domain, bytes32 target) = _getRegistryData();
+        return mailbox.dispatch{value: msg.value}(domain, target, messageBody);
     }
 
     function _getRegistryData() private view returns (IMailbox mailbox, uint32 domain, bytes32 target) {
