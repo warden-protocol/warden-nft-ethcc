@@ -11,6 +11,7 @@ import {MailboxMock} from "./mocks/MailboxMock.sol";
 contract WardenNFTTest is Test {
     uint32 public constant DOMAIN = 12345;
     bytes32 public constant TARGET = bytes32(uint256(0x1234567890ABCDE));
+    string public constant PLUGIN = "PLUGIN";
     string public constant NAME = "user-collection-name";
     string public constant SYMBOL = "user-collection-symbol";
     address public user = makeAddr("user");
@@ -20,7 +21,7 @@ contract WardenNFTTest is Test {
 
     function setUp() public {
         mailbox = address(new MailboxMock());
-        factory = new WardenNFTFactory(mailbox, DOMAIN, TARGET);
+        factory = new WardenNFTFactory(mailbox, DOMAIN, TARGET, PLUGIN);
     }
 
     function test_createCollection() public {
@@ -37,11 +38,12 @@ contract WardenNFTTest is Test {
         vm.prank(user);
         WardenNFT collection = WardenNFT(factory.createCollection(NAME, SYMBOL));
 
-        bytes memory nftDescription = "nft-description";
+        string memory nftDescription = "nft-description";
+        bytes memory expectedCalldata = abi.encode(PLUGIN, nftDescription);
 
         vm.prank(user);
         vm.expectEmit(address(mailbox));
-        emit MailboxMock.Dispatched(DOMAIN, TARGET, nftDescription);
+        emit MailboxMock.Dispatched(DOMAIN, TARGET, bytes(expectedCalldata));
         collection.createNFT(nftDescription);
     }
 
@@ -49,13 +51,15 @@ contract WardenNFTTest is Test {
         vm.prank(user);
         WardenNFT collection = WardenNFT(factory.createCollection(NAME, SYMBOL));
 
-        bytes memory nftMetadataURI = "nft-metadata-uri";
+        string memory nftMetadataURI = "nft-metadata-uri";
+        uint64 id = 1234;
+        bytes memory response = abi.encode(nftMetadataURI, id);
 
         vm.prank(mailbox);
-        collection.handle(DOMAIN, TARGET, nftMetadataURI);
+        collection.handle(DOMAIN, TARGET, response);
 
         assertEq(collection.nftCount(), 1);
         assertEq(collection.ownerOf(0), user);
-        assertEq(collection.tokenURI(0), string(nftMetadataURI));
+        assertEq(collection.tokenURI(0), nftMetadataURI);
     }
 }

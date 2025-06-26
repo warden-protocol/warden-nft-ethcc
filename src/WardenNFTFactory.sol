@@ -10,6 +10,7 @@ contract WardenNFTFactory is Ownable2Step, IWardenRegistry {
     address public mailbox;
     uint32 public domain;
     bytes32 public target;
+    string public targetPlugin;
     mapping(address user => address) public collections;
 
     event NewCollectionCreated(address indexed owner, address indexed collection);
@@ -19,10 +20,11 @@ contract WardenNFTFactory is Ownable2Step, IWardenRegistry {
 
     error AlreadyOwnsCollection(address collection);
 
-    constructor(address mailbox_, uint32 domain_, bytes32 target_) Ownable(msg.sender) {
+    constructor(address mailbox_, uint32 domain_, bytes32 target_, string memory targetPlugin_) Ownable(msg.sender) {
         mailbox = mailbox_;
         domain = domain_;
         target = target_;
+        targetPlugin = targetPlugin_;
     }
 
     function createCollection(string calldata name, string calldata symbol) external returns (address collection) {

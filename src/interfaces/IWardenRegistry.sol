@@ -7,4 +7,6 @@ interface IWardenRegistry {
     function domain() external view returns (uint32);
 
     function target() external view returns (bytes32);
+
+    function targetPlugin() external view returns (string memory);
 }

@@ -9,17 +9,18 @@ contract DeployFactory is Script {
     string public constant DEPLOYMENT_FILE = "factory.json";
     WardenNFTFactory public wardenNFTFactory;
 
-    function run(address mailbox, uint32 domain, bytes32 target) public {
+    function run(address mailbox, uint32 domain, bytes32 target, string calldata targetPlugin) public {
         console.log("mailbox: %s", mailbox);
         console.log("domain: %s", domain);
         console.logBytes32(target);
+        console.log(targetPlugin);
 
         uint256 privateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(privateKey);
         console.log("deployer address: %s", deployer);
 
         vm.startBroadcast(privateKey);
-        wardenNFTFactory = new WardenNFTFactory(mailbox, domain, target);
+        wardenNFTFactory = new WardenNFTFactory(mailbox, domain, target, targetPlugin);
         console.log("wardenNFTFactory: %s", address(wardenNFTFactory));
         vm.stopBroadcast();
 
