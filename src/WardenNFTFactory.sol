@@ -17,6 +17,7 @@ contract WardenNFTFactory is Ownable2Step, IWardenRegistry {
     event MailboxChanged(address newMailbox);
     event DomainChanged(uint32 newDomain);
     event TargetChanged(bytes32 newTarget);
+    event TargetPluginChanged(string newTargetPlugin);
 
     error AlreadyOwnsCollection(address collection);
 
@@ -49,5 +50,10 @@ contract WardenNFTFactory is Ownable2Step, IWardenRegistry {
     function changeTarget(bytes32 newTarget) external onlyOwner {
         target = newTarget;
         emit TargetChanged(newTarget);
+    }
+
+    function changeTargetPlugin(string calldata newTargetPlugin) external onlyOwner {
+        targetPlugin = newTargetPlugin;
+        emit TargetPluginChanged(newTargetPlugin);
     }
 }
