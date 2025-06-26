@@ -10,8 +10,9 @@ optimizer = true
 optimizer-runs = 10_000_000
 via_ir = true
 
-
 remappings = [
     "forge-std/=lib/forge-std/src/",
     "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
 ]
+
+fs_permissions = [{ access = "read-write", path = "./script/deployment/" }]

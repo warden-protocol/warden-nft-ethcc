@@ -13,22 +13,33 @@ contract DeployFactory is Script {
         console.log("mailbox: %s", mailbox);
         console.log("domain: %s", domain);
         console.logBytes32(target);
+
         uint256 privateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+        address deployer = vm.addr(privateKey);
+        console.log("deployer address: %s", deployer);
+
         vm.startBroadcast(privateKey);
         wardenNFTFactory = new WardenNFTFactory(mailbox, domain, target);
+        console.log("wardenNFTFactory: %s", address(wardenNFTFactory));
         vm.stopBroadcast();
+
         _saveDeployment();
     }
 
     function _saveDeployment() private {
-        string memory path = _getDeploymentPath(DEPLOYMENT_FILE);
+        string memory path = _getOrCreateDeploymentPath(DEPLOYMENT_FILE);
         string memory output = vm.serializeAddress("", "WardenNFTFactory", address(wardenNFTFactory));
         vm.writeJson(output, path);
     }
 
-    function _getDeploymentPath(string memory deploymentName) internal view returns (string memory) {
+    function _getOrCreateDeploymentPath(string memory deploymentName) internal returns (string memory) {
         string memory root = vm.projectRoot();
         string memory chainDir = string.concat(vm.toString(block.chainid));
+        string memory dir = string.concat(root, "/script/deployment/", chainDir);
+        if (!vm.exists(dir)) {
+            vm.createDir(dir, true);
+        }
+
         string memory path = string.concat(root, "/script/deployment/", chainDir, "/", deploymentName);
         return path;
     }
