@@ -49,5 +49,5 @@ $ forge fmt
 Example Warden default constructor values for Sepolia testnet:
 - mailbox_contract_address: `0x2e7FAb47da4AeE0A8b8F8AAfFAB1Ca698F864bdf`
 - domain: `141414`
-- destination_address: `0x000000000000000000000000ACb053a8349195b107e67Ef83d75EEF923ae73bA`
-- plugin_name: `"echo"`
+- destination_address: `0x000000000000000000000000E5616e072FA070E4b9B4A1fab03849555496a6CA`
+- plugin_name: `"pfp"`
