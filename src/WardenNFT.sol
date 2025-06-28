@@ -18,18 +18,17 @@ contract WardenNFT is ERC721URIStorage, Ownable, WardenMailboxInteractor {
     {}
 
     function createNFT(string calldata nftDescription) external payable onlyOwner {
-        _dispatch(bytes(nftDescription));
+        _dispatch(nftDescription);
         emit NFTRequested();
     }
 
-    function handle(uint32 domain, bytes32 sender, bytes calldata response)
+    function handle(uint32 domain, bytes32 sender, bytes calldata message)
         external
         payable
         allowedSender(domain, sender)
     {
         uint256 tokenId = nftCount++;
         _safeMint(owner(), tokenId);
-        string memory nftMetadataUri = string(_decodeResponse(response));
-        _setTokenURI(tokenId, nftMetadataUri);
+        _setTokenURI(tokenId, _decodeResponse(message));
     }
 }

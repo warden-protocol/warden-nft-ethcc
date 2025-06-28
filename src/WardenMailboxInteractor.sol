@@ -19,18 +19,18 @@ abstract contract WardenMailboxInteractor is IOrigin {
         registry = IWardenRegistry(registry_);
     }
 
-    function quoteDispatch(bytes memory messageBody) public view returns (uint256 fee) {
+    function quoteDispatch(string memory nftDescription) public view returns (uint256 fee) {
         (IMailbox mailbox, uint32 domain, bytes32 target, string memory targetPlugin) = _getRegistryData();
-        return mailbox.quoteDispatch(domain, target, _constructMessage(targetPlugin, messageBody));
+        return mailbox.quoteDispatch(domain, target, _constructMessage(targetPlugin, nftDescription));
     }
 
-    function _dispatch(bytes memory messageBody) internal returns (bytes32 messageId) {
+    function _dispatch(string memory nftDescription) internal returns (bytes32 messageId) {
         (IMailbox mailbox, uint32 domain, bytes32 target, string memory targetPlugin) = _getRegistryData();
-        return mailbox.dispatch{value: msg.value}(domain, target, _constructMessage(targetPlugin, messageBody));
+        return mailbox.dispatch{value: msg.value}(domain, target, _constructMessage(targetPlugin, nftDescription));
     }
 
-    function _decodeResponse(bytes calldata response) internal pure returns (bytes memory responseBody) {
-        (responseBody,) = abi.decode(response, (bytes, uint64));
+    function _decodeResponse(bytes calldata response) internal pure returns (string memory nftMetadataUri) {
+        (nftMetadataUri,) = abi.decode(response, (string, uint64));
     }
 
     function _getRegistryData()
@@ -49,11 +49,11 @@ abstract contract WardenMailboxInteractor is IOrigin {
         if (msg.sender != address(mailbox) || sender != target || domain != domain_) revert NoAccess();
     }
 
-    function _constructMessage(string memory targetPlugin, bytes memory messageBody)
+    function _constructMessage(string memory targetPlugin, string memory nftDescription)
         private
         pure
-        returns (bytes memory message)
+        returns (bytes memory)
     {
-        message = abi.encode(targetPlugin, messageBody);
+        return abi.encode(targetPlugin, nftDescription);
     }
 }
