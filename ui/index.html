@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warden NFT Factory</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap');
+        :root {
+            --warden-bg-dark: #18120F;
+            --warden-text-light: #F5F3EF;
+            --warden-accent-green: #C6FF4F;
+            --warden-btn-dark: #18120F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--warden-bg-dark);
+            color: var(--warden-text-light);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Chevron/Geometric background lines */
+        /*body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                160deg,
+                transparent 0px, transparent 60px,
+                rgba(255,255,255,0.03) 60px, rgba(255,255,255,0.03) 80px
+            );
+        }*/
+
+        .container {
+            background: transparent;
+            color: var(--warden-text-light);
+            border-radius: 18px;
+            box-shadow: none;
+            padding: 2em 2em 2em 2em;
+            margin: 2em auto;
+            max-width: 700px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .step-container {
+            background: rgba(24, 18, 15, 0.92);
+            color: var(--warden-text-light);
+            border-radius: 20px;
+            box-shadow: 0 1px 8px rgba(10,19,39,0.04);
+            margin-bottom: 2em;
+            padding: 1.5em 1.5em 1.5em 1.5em;
+            border: 1px solid rgba(198,255,79,0.08);
+        }
+
+        .step-container.active {
+            background: rgba(255,255,255,0.15);
+            transform: scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .step-container.completed {
+            opacity: 0.7;
+        }
+
+        .step-container.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+
+        .step-number {
+            background: var(--warden-accent-green);
+            color: var(--warden-btn-dark);
+            border-radius: 50%;
+            width: 2.2em;
+            height: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-right: 1em;
+        }
+
+        .step-number.completed {
+            background: linear-gradient(45deg, #10ac84, #00d2d3);
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(238, 90, 36, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .connect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(238, 90, 36, 0.4);
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .address-display {
+            background: #201a16;
+            color: var(--warden-accent-green);
+            border-radius: 12px;
+            padding: 0.35em 1em;
+            font-family: monospace;
+            font-size: 1em;
+            margin-top: 0.25em;
+            display: inline-block;
+        }
+
+        .network-badge {
+            background: #c6e1da;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            color: var(--warden-accent-green);
+            font-weight: 500;
+            font-size: 1.05em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--warden-accent-green);
+            border-radius: 10px;
+            background: var(--warden-bg-dark);
+            color: var(--warden-text-light);
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-primary, button[type=submit] {
+            background: var(--warden-accent-green);
+            color: var(--warden-btn-dark);
+            border: none;
+            border-radius: 999px;
+            font-weight: 600;
+            padding: 0.85em 2.2em;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            margin-top: 0.5em;
+            box-shadow: 0 2px 8px rgba(198,255,79,0.08);
+            letter-spacing: 0.04em;
+        }
+
+        .btn-primary:hover, button[type=submit]:hover {
+            background: #eaffb2;
+            color: var(--warden-btn-dark);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .success {
+            background: rgba(16, 172, 132, 0.2);
+            border: 1px solid #c6e1da;
+            color: #c6e1da;
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .info {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid #c6e1da;
+            color: #c6e1da;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .collection-info {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .collection-info h3 {
+            margin-bottom: 10px;
+        }
+
+        .fee-info {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .step-description {
+            color: var(--warden-accent-green);
+            margin-bottom: 1em;
+            font-size: 1.1em;
+        }
+
+        .input-hint {
+            font-size: 0.95em;
+            color: #6c7a89;
+            margin-top: 0.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Warden NFT Factory</h1>
+            <p>Create AI-powered NFT collections in 4 easy steps</p>
+        </div>
+
+        <!-- Step 1: Connect Wallet -->
+        <div class="step-container active" id="step1">
+            <div class="step-header">
+                <div class="step-number" id="step1-number">1</div>
+                <div class="step-title">Connect MetaMask Wallet</div>
+            </div>
+            <div class="step-description">
+                First, connect your MetaMask wallet to interact with the Sepolia testnet.
+            </div>
+            <div id="connectWallet">
+                <button class="connect-btn">Connect MetaMask Wallet</button>
+            </div>
+            <div id="walletConnected" class="hidden">
+                <div class="wallet-info">
+                    <span>✅ Connected:</span>
+                    <div class="address-display" id="userAddress"></div>
+                    <div class="network-badge" id="networkInfo">Sepolia</div>
+                </div>
+            </div>
+            <div id="step1-status"></div>
+        </div>
+
+        <!-- Step 2: Connect to Factory or Collection -->
+        <div class="step-container disabled" id="step2">
+            <div class="step-header">
+                <div class="step-number" id="step2-number">2</div>
+                <div class="step-title">Connect Contracts</div>
+            </div>
+            <div class="step-description">
+                Connect to your NFT Factory contract or an existing NFT Collection contract.
+            </div>
+            <div class="form-group">
+                <form id="factoryForm">
+                    <label for="factoryAddressInput">Factory Contract Address</label>
+                    <input type="text" id="factoryAddressInput" placeholder="0x...">
+                    <button type="submit" class="btn-primary" id="connectFactoryBtn">Connect Factory</button>
+                    <div class="input-hint">Enter the address of your deployed NFT Factory contract.</div>
+                </form>
+            </div>
+            <div class="form-group">
+                <form id="collectionForm">
+                    <label for="collectionContractAddressInput">Collection Contract Address</label>
+                    <input type="text" id="collectionContractAddressInput" placeholder="0x...">
+                    <button type="submit" class="btn-primary" id="connectCollectionBtn">Connect Collection</button>
+                    <div class="input-hint">Or connect directly to an existing NFT Collection contract.</div>
+                </form>
+            </div>
+            <div id="step2-status"></div>
+        </div>
+
+        <!-- Step 3: Create Collection -->
+        <div class="step-container disabled" id="step3">
+            <div class="step-header">
+                <div class="step-number" id="step3-number">3</div>
+                <div class="step-title">Create NFT Collection</div>
+            </div>
+            <div class="step-description">
+                Deploy your own NFT collection contract with a custom name and symbol, or use an existing collection.
+            </div>
+            <div class="form-group">
+                <label for="existingCollectionAddress">Or use an existing NFT Collection Address</label>
+                <input type="text" id="existingCollectionAddress" placeholder="0x... (optional)">
+                <div class="input-hint">If you already have a deployed collection, enter its address here to skip deployment.</div>
+            </div>
+            <form id="createCollectionForm">
+                <div class="form-group">
+                    <label for="collectionName">Collection Name</label>
+                    <input type="text" id="collectionName" placeholder="My Awesome AI NFTs" required>
+                </div>
+                <div class="form-group">
+                    <label for="collectionSymbol">Collection Symbol</label>
+                    <input type="text" id="collectionSymbol" placeholder="MAIN" maxlength="10" required>
+                    <div class="input-hint">Short symbol (3-5 characters recommended)</div>
+                </div>
+                <button type="submit" class="btn-primary" id="createCollection" disabled>
+                    Deploy Collection Contract
+                </button>
+            </form>
+            <div id="step3-status"></div>
+        </div>
+
+        <!-- Step 4: Mint NFT -->
+        <div class="step-container disabled" id="step4">
+            <div class="step-header">
+                <div class="step-number" id="step4-number">4</div>
+                <div class="step-title">Mint AI-Generated NFT</div>
+            </div>
+            <div class="step-description">
+                Create your first NFT by providing an AI prompt. The NFT will be generated using Venice.ai.
+            </div>
+            
+            <div class="collection-info hidden" id="collectionInfo">
+                <h3 id="collectionDetails"></h3>
+                <div class="address-display" id="collectionAddress"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="mintDesc">AI Prompt for NFT Generation</label>
+                <textarea id="mintDesc" placeholder="A majestic dragon soaring through purple clouds, digital art, highly detailed, fantasy style"></textarea>
+                <div class="input-hint">Describe the image you want the AI to generate for your NFT</div>
+            </div>
+            
+            <button class="btn-primary" id="mintNFT" disabled>
+                Mint NFT
+            </button>
+            <div id="step4-status"></div>
+        </div>
+    </div>
+    <!-- Load ethers.js from CDN globally -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html> 
