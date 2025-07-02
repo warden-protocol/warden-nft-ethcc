@@ -45,6 +45,10 @@ Example Warden default constructor values for Sepolia testnet:
 - destination_address: `0x000000000000000000000000E5616e072FA070E4b9B4A1fab03849555496a6CA`
 - plugin_name: `"pfp"`
 
+### UI
+
+You can use the built-in UI to interact with the Factory contract or with the collection (once deployed) by running `make serve` inside the `/ui` directory.
+
 # Step by step guide
 
 ## Part 1: Setting Up Your Environment
