@@ -259,7 +259,7 @@ mintNFTBtn.addEventListener('click', async (e) => {
     const nft = await validateExistingCollection(collectionAddr, provider, signer, userAddress);
     const fee = await mintNFT(nft, desc);
     const feeEth = ethers.formatEther(fee);
-    showStatus(step4Status, `NFT minted! Fee paid: ${feeEth} ETH`, 'success');
+    showStatus(step4Status, 'NFT minted! Go to https://testnets.opensea.io/ to view your NFT');
   } catch (e) {
     showStatus(step4Status, e.message || 'Mint failed', 'error');
   }

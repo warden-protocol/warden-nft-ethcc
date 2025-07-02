@@ -11,5 +11,3 @@ help:
 build :; forge build --sizes
 
 test :; forge test -vvv
-
-serve:; node ./ui/serve.js

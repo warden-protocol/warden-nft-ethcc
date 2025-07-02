@@ -3,7 +3,32 @@
 
 // --- Constants ---
 export const FACTORY_ABI = [
-  // ... (copy ABI from app.js)
+  {"inputs":[{"internalType":"address","name":"mailbox_","type":"address"},{"internalType":"uint32","name":"domain_","type":"uint32"},{"internalType":"bytes32","name":"target_","type":"bytes32"},{"internalType":"string","name":"targetPlugin_","type":"string"}],"stateMutability":"nonpayable","type":"constructor"},
+  {"inputs":[{"internalType":"address","name":"collection","type":"address"}],"type":"error","name":"AlreadyOwnsCollection"},
+  {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"type":"error","name":"OwnableInvalidOwner"},
+  {"inputs":[{"internalType":"address","name":"account","type":"address"}],"type":"error","name":"OwnableUnauthorizedAccount"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint32","name":"newDomain","type":"uint32"}],"name":"DomainChanged","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"newMailbox","type":"address"}],"name":"MailboxChanged","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"collection","type":"address"}],"name":"NewCollectionCreated","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferStarted","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"newTarget","type":"bytes32"}],"name":"TargetChanged","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"newTargetPlugin","type":"string"}],"name":"TargetPluginChanged","type":"event"},
+  {"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"uint32","name":"newDomain","type":"uint32"}],"name":"changeDomain","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"newMailbox","type":"address"}],"name":"changeMailbox","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"bytes32","name":"newTarget","type":"bytes32"}],"name":"changeTarget","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"string","name":"newTargetPlugin","type":"string"}],"name":"changeTargetPlugin","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"collections","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"}],"name":"createCollection","outputs":[{"internalType":"address","name":"collection","type":"address"}],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"domain","outputs":[{"internalType":"uint32","name":"","type":"uint32"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"mailbox","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"pendingOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"target","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"targetPlugin","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}
 ];
 export const FACTORY_BYTECODE = "0x..."; // (copy from app.js)
 export const NFT_ABI = [
@@ -35,10 +60,33 @@ export async function validateFactoryContract(addr, provider, signer) {
   const code = await provider.getCode(addr);
   if (code === '0x') throw new Error("No contract found at this address");
   // Check for the collections(address) function (selector: 0x5c975abb)
-  if (!code.includes('5c975abb')) {
+  if (!code.includes('43add2e6')) {
     throw new Error('This contract does not appear to be a WardenNFTFactory (missing collections(address) function).');
   }
   return new ethers.Contract(addr, FACTORY_ABI, signer);
+}
+
+// --- Connect to Existing Factory Contract ---
+/**
+ * Connects to an existing WardenNFTFactory contract after validating the address and contract code.
+ * @param {string} addr - The factory contract address
+ * @param {ethers.Provider} provider - The ethers provider
+ * @param {ethers.Signer} signer - The ethers signer
+ * @returns {ethers.Contract} - The connected factory contract instance
+ * @throws {Error} - If the address is invalid or not a WardenNFTFactory
+ */
+export async function connectToFactory(addr, provider, signer) {
+  if (!ethers.isAddress(addr) || addr === ethers.ZeroAddress) throw new Error("Invalid factory contract address format");
+  const code = await provider.getCode(addr);
+  if (code === '0x') throw new Error("No contract found at this address");
+  const contract = new ethers.Contract(addr, FACTORY_ABI, signer);
+  try {
+    // Try calling a factory-specific function with a dummy address
+    await contract.collections(ethers.ZeroAddress);
+  } catch (err) {
+    throw new Error('This contract does not appear to be a WardenNFTFactory (collections(address) call failed).');
+  }
+  return contract;
 }
 
 // --- Deploy Collection ---
@@ -94,7 +142,6 @@ export async function mintNFT(nft, desc) {
     console.error('mintNFT: error calling quoteDispatch:', err);
     throw new Error('Failed to get minting fee from quoteDispatch. See console for details.');
   }
-  console.log('mintNFT: calling createNFT with desc:', desc, 'and value:', fee.toString());
   const tx = await nft.createNFT(desc, { value: fee });
   await tx.wait();
   return fee;
